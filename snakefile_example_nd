@@ -1,0 +1,17 @@
+from glob import glob
+
+results = [f for f in glob('fastq/*_R1.fastq.gz')]
+results = [f.replace('.fastq.gz', '_kallisto') for f in results]
+results = [f.replace('fastq/','write/') for f in results]
+results = [f.replace('_R1','') for f in results]
+rule all:
+	input: results
+
+rule kallisto_quant:
+	input:
+		read1=lambda wildcards: f'fastq/{wildcards.sample}_R1.fastq.gz',
+		read2=lambda wildcards: f'fastq/{wildcards.sample}_R2.fastq.gz'
+	output:
+		directory('write/{sample}_kallisto')
+	shell:
+		'kallisto quant -i /home/nadia/isoformDE/data/transcriptomes/mouse_transcriptome_index.idx -o {output} {input.read1} {input.read2}'
